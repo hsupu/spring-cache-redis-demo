@@ -12,7 +12,7 @@ import org.springframework.core.io.FileSystemResource;
  * @author xp
  */
 @Configuration
-@ComponentScan("demo.config.properties")
+@ComponentScan(basePackages = {"demo.config.properties"})
 public class PropertyConfig {
 
     @Bean

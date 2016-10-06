@@ -1,6 +1,7 @@
 package demo;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -28,6 +29,11 @@ public class CacheTest {
     @Autowired
     SampleCache sampleCache;
 
+    @Before
+    public void before() {
+        sampleCache.clear();
+    }
+
     @Test
     public void configTest() {
         LOG.info(redisProperties.toString());
@@ -36,6 +42,7 @@ public class CacheTest {
     @Test
     public void cacheableTest() {
         Assert.assertEquals("1", sampleCache.get(1));
+        Assert.assertEquals("1", sampleCache.get(1)); // cache effected if no logging
         Assert.assertEquals("2", sampleCache.set(1, "2"));
         Assert.assertEquals("2", sampleCache.get(1));
         Assert.assertEquals(true, sampleCache.del(1));

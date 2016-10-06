@@ -1,5 +1,8 @@
 package demo.config;
 
+import java.io.*;
+import java.nio.charset.*;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -9,12 +12,10 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
+import org.springframework.data.redis.serializer.*;
 
 import demo.config.properties.RedisProperties;
-import demo.utils.GenericToStringRedisSerializer;
+import demo.utils.RedisSerializerUtils;
 import redis.clients.jedis.JedisPoolConfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,23 +49,47 @@ public class RedisConfig {
     }
 
     @Bean
-    public GenericToStringRedisSerializer stringRedisSerializer() {
-        return new GenericToStringRedisSerializer();
+    public RedisSerializer<String> stringRedisSerializer() {
+        return new StringRedisSerializer();
     }
 
     @Bean
-    public JdkSerializationRedisSerializer jdkRedisSerializer() {
+    public RedisSerializer<Object> jdkRedisSerializer() {
         return new JdkSerializationRedisSerializer();
     }
 
     @Bean
-    public GenericJackson2JsonRedisSerializer jacksonRedisSerializer(ObjectMapper objectMapper) {
+    public RedisSerializer<Object> jacksonRedisSerializer(ObjectMapper objectMapper) {
         return new GenericJackson2JsonRedisSerializer(objectMapper);
     }
 
     @Bean
+    public RedisSerializer<Number> numberRedisSerializer() {
+        return new RedisSerializer<Number>() {
+
+            private Charset charset = Charset.forName("UTF8");
+
+            @Override
+            public byte[] serialize(Number o) throws SerializationException {
+                if (o == null) {
+                    return RedisSerializerUtils.EMPTY_ARRAY;
+                }
+                return o.toString().getBytes(charset);
+            }
+
+            @Override
+            public Long deserialize(byte[] bytes) throws SerializationException {
+                if (RedisSerializerUtils.isEmpty(bytes)) {
+                    return null;
+                }
+                return Long.valueOf(new String(bytes, charset));
+            }
+        };
+    }
+
+    @Bean
     @Primary
-    public <T> RedisTemplate<String, T> redisTemplate(
+    public <T extends Serializable> RedisTemplate<String, T> redisTemplate(
             RedisConnectionFactory connectionFactory,
             @Qualifier("stringRedisSerializer") RedisSerializer stringSerializer,
             @Qualifier("jdkRedisSerializer") RedisSerializer jdkSerializer,
@@ -77,6 +102,22 @@ public class RedisConfig {
         redisTemplate.setValueSerializer(jdkSerializer);
         redisTemplate.setHashKeySerializer(stringSerializer);
         redisTemplate.setHashValueSerializer(jdkSerializer);
+        return redisTemplate;
+    }
+
+    @Bean
+    public <T extends Number> RedisTemplate<String, T> numberRedisTemplate(
+            RedisConnectionFactory connectionFactory,
+            @Qualifier("stringRedisSerializer") RedisSerializer stringSerializer,
+            @Qualifier("numberRedisSerializer") RedisSerializer numberSerializer) {
+        RedisTemplate<String, T> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(connectionFactory);
+        redisTemplate.setEnableTransactionSupport(false);
+        redisTemplate.setEnableDefaultSerializer(false);
+        redisTemplate.setKeySerializer(stringSerializer);
+        redisTemplate.setValueSerializer(numberSerializer);
+        redisTemplate.setHashKeySerializer(stringSerializer);
+        redisTemplate.setHashValueSerializer(numberSerializer);
         return redisTemplate;
     }
 
