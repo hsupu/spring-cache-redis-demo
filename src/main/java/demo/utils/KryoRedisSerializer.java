@@ -36,10 +36,8 @@ public class KryoRedisSerializer<T> implements RedisSerializer<T> {
 
     @Override
     public T deserialize(final byte[] bytes) throws SerializationException {
-        if (bytes == null) {
-            throw new NullPointerException("bytes is uninitialized array.");
-        }
-        if (bytes.length == 0) {
+        // both not found or "null" value will return "null"
+        if (bytes == null || bytes.length == 0) {
             return null;
         }
         return kryoPool.run(kryo -> {
