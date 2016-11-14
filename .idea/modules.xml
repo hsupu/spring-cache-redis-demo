@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/demo.spring-cache-redis.iml" filepath="$PROJECT_DIR$/demo.spring-cache-redis.iml" />
+      <module fileurl="file://$PROJECT_DIR$/spring-cache-redis.iml" filepath="$PROJECT_DIR$/spring-cache-redis.iml" />
     </modules>
   </component>
 </project>

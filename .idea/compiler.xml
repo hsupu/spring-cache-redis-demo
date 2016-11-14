@@ -23,10 +23,12 @@
         <outputRelativeToContentRoot value="true" />
         <processorPath useClasspath="true" />
         <module name="demo.spring-cache-redis" />
+        <module name="spring-cache-redis" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel target="1.8">
       <module name="demo.spring-cache-redis" target="1.8" />
+      <module name="spring-cache-redis" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>
