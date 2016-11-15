@@ -23,9 +23,6 @@ public class KryoRedisSerializer<T> implements RedisSerializer<T> {
     @Override
     public byte[] serialize(final T o) throws SerializationException {
         return kryoPool.run(kryo -> {
-            if (o == null) {
-                return new byte[0];
-            }
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             Output output = new Output(stream);
             kryo.writeClassAndObject(output, o);
